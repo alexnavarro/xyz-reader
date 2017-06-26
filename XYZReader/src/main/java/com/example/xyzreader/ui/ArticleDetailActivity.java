@@ -11,7 +11,10 @@ import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.ChangeBounds;
+import android.transition.Explode;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,12 +46,18 @@ public class ArticleDetailActivity extends AppCompatActivity
     private MyPagerAdapter mPagerAdapter;
     private View mUpButtonContainer;
     private View mUpButton;
-    private List<Item> items = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setSharedElementEnterTransition(new ChangeBounds().setInterpolator(new FastOutSlowInInterpolator()).setDuration(750));
+            getWindow().setReturnTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true));
+            getWindow().setExitTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true));
+            getWindow().setEnterTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true).setInterpolator(new FastOutSlowInInterpolator()).setDuration(750));
+        }
         super.onCreate(savedInstanceState);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
@@ -76,10 +85,10 @@ public class ArticleDetailActivity extends AppCompatActivity
 
             @Override
             public void onPageSelected(int position) {
-//                if (mCursor != null) {
-//                    mCursor.moveToPosition(position);
-//                }
-                mSelectedItemId = position;
+                if (mCursor != null) {
+                    mCursor.moveToPosition(position);
+                }
+                mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
                 updateUpButtonPosition();
             }
         });
@@ -96,7 +105,6 @@ public class ArticleDetailActivity extends AppCompatActivity
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mUpButtonContainer.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
                 @Override
                 public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
                     view.onApplyWindowInsets(windowInsets);
@@ -117,12 +125,6 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
     @Override
-    public void onBackPressed() {
-        supportFinishAfterTransition();
-        super.onBackPressed();
-    }
-
-    @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return ArticleLoader.newAllArticlesInstance(this);
     }
@@ -130,41 +132,19 @@ public class ArticleDetailActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         mCursor = cursor;
-        items.clear();
-        if(cursor != null){
-            while (cursor.moveToNext()){
-                Item item = new Item();
-                item.setId(cursor.getInt(ArticleLoader.Query._ID));
-                item.setTitle(cursor.getString(ArticleLoader.Query.TITLE));
-                item.setAspectRatio(cursor.getString(ArticleLoader.Query.ASPECT_RATIO));
-                item.setAuthor(cursor.getString(ArticleLoader.Query.AUTHOR));
-                item.setBody(cursor.getString(ArticleLoader.Query.BODY));
-                item.setPhotoUrl(cursor.getString(ArticleLoader.Query.PHOTO_URL));
-                item.setPublishedDate(cursor.getString(ArticleLoader.Query.PUBLISHED_DATE));
-                item.setThumbUrl(cursor.getString(ArticleLoader.Query.THUMB_URL));
-                items.add(item);
-            }
-        }
-
-        mPagerAdapter.notifyDataSetChanged();
-
-        if(mStartId > 0){
-            for(int i = 0 ; i < items.size(); i ++){
-                if (items.get(i).getId() == mStartId){
-                    mPager.setCurrentItem(i, false);
-                    break;
-                }
-            }
-        }
-
-//        mCursor = cursor;
-//        mStartId = 0;
         mPagerAdapter.notifyDataSetChanged();
 
         // Select the start ID
-//        if (mStartId > 0) {
-//            mCursor.moveToFirst();
-//            // TODO: optimize
+        if (mStartId > 0) {
+            mCursor.moveToFirst();
+            while(mCursor.moveToNext()){
+                if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
+                    final int position = mCursor.getPosition();
+                    mPager.setCurrentItem(position, false);
+                    break;
+                }
+            }
+            // TODO: optimize
 //            while (!mCursor.isAfterLast()) {
 //                if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
 //                    final int position = mCursor.getPosition();
@@ -173,8 +153,8 @@ public class ArticleDetailActivity extends AppCompatActivity
 //                }
 //                mCursor.moveToNext();
 //            }
-//            mStartId = 0;
-//        }
+            mStartId = 0;
+        }
     }
 
     @Override
@@ -212,13 +192,13 @@ public class ArticleDetailActivity extends AppCompatActivity
 
         @Override
         public Fragment getItem(int position) {
-//            mCursor.moveToPosition(position);
-            return ArticleDetailFragment.newInstance(items.get(position));
+            mCursor.moveToPosition(position);
+            return ArticleDetailFragment.newInstance(mCursor.getLong(ArticleLoader.Query._ID));
         }
 
         @Override
         public int getCount() {
-            return items.size();
+            return (mCursor != null) ? mCursor.getCount() : 0;
         }
     }
 }
