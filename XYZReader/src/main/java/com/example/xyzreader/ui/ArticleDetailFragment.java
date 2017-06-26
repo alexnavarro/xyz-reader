@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.graphics.Palette;
 import android.text.Html;
+import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -216,9 +217,9 @@ public class ArticleDetailFragment extends Fragment {
         }
 
         TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
-        TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
+        final TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
-        TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
+        final TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
@@ -227,26 +228,64 @@ public class ArticleDetailFragment extends Fragment {
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
             titleView.setText(item.getTitle());
-//            Date publishedDate = parsePublishedDate();
-//            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
-//                bylineView.setText(Html.fromHtml(
-//                        DateUtils.getRelativeTimeSpanString(
-//                                publishedDate.getTime(),
-//                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-//                                DateUtils.FORMAT_ABBREV_ALL).toString()
-//                                + " by <font color='#ffffff'>"
-//                                + item.getAuthor()
-//                                + "</font>"));
-//
-//            } else {
-//                // If date is before 1902, just show the string
-//                bylineView.setText(Html.fromHtml(
-//                        outputFormat.format(publishedDate) + " by <font color='#ffffff'>"
-//                        + item.getAuthor()
-//                                + "</font>"));
-//
-//            }
-//            bodyView.setText(Html.fromHtml(item.getBody().replaceAll("(\r\n|\n)", "<br />")));
+            final Date publishedDate = parsePublishedDate();
+            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        final Spanned spanned = Html.fromHtml(
+                                DateUtils.getRelativeTimeSpanString(
+                                        publishedDate.getTime(),
+                                        System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
+                                        DateUtils.FORMAT_ABBREV_ALL).toString()
+                                        + " by <font color='#ffffff'>"
+                                        + item.getAuthor()
+                                        + "</font>");
+                        bylineView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                bylineView.setText(spanned);
+                            }
+                        });
+                    }
+                }).start();
+
+
+
+            } else {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // If date is before 1902, just show the string
+                        final Spanned spanned = Html.fromHtml(
+                                outputFormat.format(publishedDate) + " by <font color='#ffffff'>"
+                                        + item.getAuthor()
+                                        + "</font>");
+                        bylineView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                bylineView.setText(spanned);
+                            }
+                        });
+                    }
+                }).start();
+
+            }
+//            bodyView.setText(Html.fromHtml(item.getBody().replaceAll("(\r\n|\n)", "<br />")))
+
+            new Thread(new Runnable(){
+                @Override
+                public void run() {
+                    final Spanned spanned = Html.fromHtml(item.getBody().replaceAll("(\r\n|\n)", "<br />"));
+                    bodyView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            bodyView.setText(spanned);
+                        }
+                    });
+                }
+            }).start();
 
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(item.getPhotoUrl(), new ImageLoader.ImageListener() {
