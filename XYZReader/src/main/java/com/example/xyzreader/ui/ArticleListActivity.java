@@ -9,18 +9,20 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.TextView;
 
 import com.example.xyzreader.R;
@@ -39,7 +41,7 @@ import java.util.GregorianCalendar;
  * touched, lead to a {@link ArticleDetailActivity} representing item details. On tablets, the
  * activity presents a grid of items as cards.
  */
-public class ArticleListActivity extends ActionBarActivity implements
+public class ArticleListActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = ArticleListActivity.class.toString();
@@ -55,6 +57,7 @@ public class ArticleListActivity extends ActionBarActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        supportRequestWindowFeature(Window.FEATURE_CONTENT_TRANSITIONS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
 
@@ -79,21 +82,21 @@ public class ArticleListActivity extends ActionBarActivity implements
     }
 
     private void refresh() {
-        startService(new Intent(this, UpdaterService.class));
+//        startService(new Intent(this, UpdaterService.class));
     }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        registerReceiver(mRefreshingReceiver,
-                new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        unregisterReceiver(mRefreshingReceiver);
-    }
+//
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//        registerReceiver(mRefreshingReceiver,
+//                new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
+//    }
+//
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        unregisterReceiver(mRefreshingReceiver);
+//    }
 
     private boolean mIsRefreshing = false;
 
@@ -152,8 +155,11 @@ public class ArticleListActivity extends ActionBarActivity implements
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
+                    ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(ArticleListActivity.this, Pair.create(view.findViewById(R.id.thumbnail), "main_photo"));
+                    ActivityCompat.startActivity(ArticleListActivity.this, new Intent(Intent.ACTION_VIEW,
+                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))), options.toBundle());
+//                    startActivity(new Intent(Intent.ACTION_VIEW,
+//                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
                 }
             });
             return vh;
