@@ -144,15 +144,6 @@ public class ArticleDetailActivity extends AppCompatActivity
                     break;
                 }
             }
-            // TODO: optimize
-//            while (!mCursor.isAfterLast()) {
-//                if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
-//                    final int position = mCursor.getPosition();
-//                    mPager.setCurrentItem(position, false);
-//                    break;
-//                }
-//                mCursor.moveToNext();
-//            }
             mStartId = 0;
         }
     }
