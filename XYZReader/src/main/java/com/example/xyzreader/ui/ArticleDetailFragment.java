@@ -8,24 +8,25 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ShareCompat;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.ActionBar;
-import android.support.v7.graphics.Palette;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
+import android.transition.ChangeBounds;
+import android.transition.Explode;
+import android.transition.Transition;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -39,6 +40,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import static android.view.View.VISIBLE;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
@@ -55,17 +58,13 @@ public class ArticleDetailFragment extends Fragment implements
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
-//    private int mMutedColor = 0xFF333333;
     private ObservableScrollView mScrollView;
-//    private DrawInsetsFrameLayout mDrawInsetsFrameLayout;
-//    private ColorDrawable mStatusBarColorDrawable;
 
     private int mTopInset;
     private View mPhotoContainerView;
     private ImageView mPhotoView;
     private int mScrollY;
     private boolean mIsCard = false;
-//    private int mStatusBarFullOpacityBottom;
 
     private View mActionBarBackgroundView;
     private View mStatusBarBackgroundView;
@@ -103,8 +102,6 @@ public class ArticleDetailFragment extends Fragment implements
         }
 
         mIsCard = getResources().getBoolean(R.bool.detail_is_card);
-//        mStatusBarFullOpacityBottom = getResources().getDimensionPixelSize(
-////                R.dimen.detail_card_top_margin);
         setHasOptionsMenu(true);
     }
 
@@ -127,15 +124,6 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-//        mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
-//                mRootView.findViewById(R.id.draw_insets_frame_layout);
-//        mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
-//            @Override
-//            public void onInsetsChanged(Rect insets) {
-//                mTopInset = insets.top;
-//            }
-//        });
-
         mScrollView = (ObservableScrollView) mRootView.findViewById(R.id.scrollview);
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
@@ -144,8 +132,6 @@ public class ArticleDetailFragment extends Fragment implements
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mPhotoContainerView.setTransitionName("main_photo" + mItemId);
         }
-
-//        mStatusBarColorDrawable = new ColorDrawable(0);
 
         mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -158,13 +144,13 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
         bindViews();
-//        updateStatusBar();
         return mRootView;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        startFragmentTransitions(view);
         mActionBarBackgroundView = mRootView.findViewById(R.id.prop_details_actionbar_background);
         mStatusBarBackgroundView = mRootView.findViewById(R.id.statusbar_background);
         mActionBarScrimLayout = mRootView.findViewById(R.id.actionbar_scrim_layout);
@@ -241,8 +227,6 @@ public class ArticleDetailFragment extends Fragment implements
             @Override
             public void onScrollChanged() {
                 mScrollY = mScrollView.getScrollY();
-//                getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
-//                mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
                 mPhotoContainerView.setY(mScrollY / PARALLAX_FACTOR);
                 if(mScrollY > mPhotoContainerView.getHeight()  && isActionBarTransparent){
                     animatorFadeIn.start();
@@ -256,39 +240,53 @@ public class ArticleDetailFragment extends Fragment implements
                     animatorFadeOut.start();
                 }
 
-//                updateStatusBar();
             }
         });
-//        startFragmentTransitions(view);
     }
 
-//
-//    private void startFragmentTransitions(View view) {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            getActivity().getWindow().setSharedElementEnterTransition(new ChangeBounds().setInterpolator(new FastOutSlowInInterpolator()).setDuration(750));
-//            getActivity().getWindow().setReturnTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true));
-//            getActivity().getWindow().setExitTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true));
-//            getActivity().getWindow().setEnterTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true).setInterpolator(new FastOutSlowInInterpolator()).setDuration(750));
-//        }
-//    }
 
-//    private void updateStatusBar() {
-//        int color = 0;
-//        if (mPhotoView != null && mTopInset != 0 && mScrollY > 0) {
-//            float f = progress(mScrollY,
-//                    mStatusBarFullOpacityBottom - mTopInset * 3,
-//                    mStatusBarFullOpacityBottom - mTopInset);
-//            color = Color.argb((int) (255 * f),
-//                    (int) (Color.red(mMutedColor) * 0.9),
-//                    (int) (Color.green(mMutedColor) * 0.9),
-//                    (int) (Color.blue(mMutedColor) * 0.9));
-//        }
-//        mStatusBarColorDrawable.setColor(color);
-////        mDrawInsetsFrameLayout.setInsetBackground(mStatusBarColorDrawable);
-//    }
+    private void startFragmentTransitions(final View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            final View shadowTop = view.findViewById(R.id.top_scrim_protector);
+            getActivity().getWindow().setSharedElementEnterTransition(new ChangeBounds().setInterpolator(new FastOutSlowInInterpolator()).setDuration(750));
+            getActivity().getWindow().setReturnTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true));
+            getActivity().getWindow().setExitTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true));
+            getActivity().getWindow().setEnterTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true).setInterpolator(new FastOutSlowInInterpolator()).setDuration(750).addListener(new Transition.TransitionListener() {
+                @Override
+                public void onTransitionStart(Transition transition) {
+                    shadowTop.setVisibility(View.GONE);
+                }
 
-    static float progress(float v, float min, float max) {
-        return constrain((v - min) / (max - min), 0, 1);
+                @Override
+                public void onTransitionEnd(Transition transition) {
+                    if (getActivity() != null) {
+                        shadowTop.setVisibility(VISIBLE);
+                        Animation animation = AnimationUtils.loadAnimation(view.getContext(), android.R.anim.fade_in);
+                        shadowTop.startAnimation(animation);
+                        final View statusBarBackground = getActivity().getWindow().getDecorView().findViewById(android.R.id.statusBarBackground);
+                        if (statusBarBackground != null) {
+                            statusBarBackground.startAnimation(animation);
+                        }
+                    }
+
+                }
+
+                @Override
+                public void onTransitionCancel(Transition transition) {
+
+                }
+
+                @Override
+                public void onTransitionPause(Transition transition) {
+
+                }
+
+                @Override
+                public void onTransitionResume(Transition transition) {
+
+                }
+            }));
+        }
     }
 
     static float constrain(float val, float min, float max) {
@@ -358,12 +356,7 @@ public class ArticleDetailFragment extends Fragment implements
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Bitmap bitmap = imageContainer.getBitmap();
                             if (bitmap != null) {
-//                                Palette p = Palette.generate(bitmap, 12);
-//                                mMutedColor = p.getDarkMutedColor(0xFF333333);
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
-//                                mRootView.findViewById(R.id.meta_bar)
-//                                        .setBackgroundColor(mMutedColor);
-//                                updateStatusBar();
                             }
                         }
 
