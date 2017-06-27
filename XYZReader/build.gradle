@@ -1,17 +1,4 @@
-//buildscript {
-//    repositories {
-//        mavenCentral()
-//        maven { url 'https://maven.google.com' }
-//    }
-//    dependencies {
-//        classpath 'com.android.tools.build:gradle:2.2.0'
-//    }
-//}
 apply plugin: 'com.android.application'
-//
-//repositories {
-//    mavenCentral()
-//}
 
 android {
     compileSdkVersion 25

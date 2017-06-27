@@ -1,5 +1,8 @@
 package com.example.xyzreader.ui;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
+import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Intent;
@@ -12,6 +15,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.graphics.Palette;
 import android.text.Html;
@@ -28,6 +32,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.example.xyzreader.util.Util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -60,6 +65,12 @@ public class ArticleDetailFragment extends Fragment implements
     private int mScrollY;
     private boolean mIsCard = false;
     private int mStatusBarFullOpacityBottom;
+
+    private View mActionBarBackgroundView;
+    private View mStatusBarBackgroundView;
+    private View mActionBarScrimLayout;
+    TextView titleView;
+    private boolean isActionBarTransparent  = true;;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -125,15 +136,6 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
         mScrollView = (ObservableScrollView) mRootView.findViewById(R.id.scrollview);
-        mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
-            @Override
-            public void onScrollChanged() {
-                mScrollY = mScrollView.getScrollY();
-                getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
-                mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
-                updateStatusBar();
-            }
-        });
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
         mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
@@ -159,11 +161,106 @@ public class ArticleDetailFragment extends Fragment implements
         return mRootView;
     }
 
-//    @Override
-//    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-//        super.onViewCreated(view, savedInstanceState);
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mActionBarBackgroundView = mRootView.findViewById(R.id.article_title);
+        mStatusBarBackgroundView = mRootView.findViewById(R.id.prop_details_actionbar_background);
+        mActionBarScrimLayout = mRootView.findViewById(R.id.actionbar_scrim_layout);
+        setupActionBarScrim();
+
+        final ValueAnimator animatorFadeIn = new ValueAnimator();
+        animatorFadeIn.setFloatValues(0f, 1f);
+        animatorFadeIn.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                if (mActionBarScrimLayout != null) {
+                    mActionBarScrimLayout.setAlpha(((Float) animation.getAnimatedValue()));
+                }
+            }
+        });
+
+        animatorFadeIn.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                ActionBar actionBar = getActivity().getActionBar();
+                if(actionBar != null) {
+                        actionBar.setTitle(titleView.getText());
+                }
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+
+        final ValueAnimator animatorFadeOut = new ValueAnimator();
+        animatorFadeOut.setFloatValues(1f, 0f);
+        animatorFadeOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                if (mActionBarScrimLayout != null) {
+                    mActionBarScrimLayout.setAlpha(((Float) animation.getAnimatedValue()));
+                }
+            }
+        });
+        animatorFadeOut.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                android.support.v7.app.ActionBar actionBar = (getActivityCast()).getSupportActionBar();
+                if (actionBar != null) {
+                    actionBar.setTitle("");
+                }
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+
+        mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
+            @Override
+            public void onScrollChanged() {
+                mScrollY = mScrollView.getScrollY();
+//                getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
+//                mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
+                mPhotoContainerView.setY(mScrollY / PARALLAX_FACTOR);
+                if(mScrollY > mPhotoContainerView.getHeight()  && isActionBarTransparent){
+                    animatorFadeIn.start();
+                }
+
+                if (mScrollY > mPhotoContainerView.getHeight() && isActionBarTransparent) {
+                    isActionBarTransparent = false;
+                    animatorFadeIn.start();
+                } else if (mScrollY < (mPhotoContainerView.getHeight() - mActionBarScrimLayout.getHeight()) && !isActionBarTransparent) {
+                    isActionBarTransparent = true;
+                    animatorFadeOut.start();
+                }
+
+//                updateStatusBar();
+            }
+        });
 //        startFragmentTransitions(view);
-//    }
+    }
+
 //
 //    private void startFragmentTransitions(View view) {
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -219,7 +316,7 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
-        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
+        titleView = (TextView) mRootView.findViewById(R.id.article_title);
         TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
         final TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
@@ -321,5 +418,17 @@ public class ArticleDetailFragment extends Fragment implements
         return mIsCard
                 ? (int) mPhotoContainerView.getTranslationY() + mPhotoView.getHeight() - mScrollY
                 : mPhotoView.getHeight() - mScrollY;
+    }
+
+    private void setupActionBarScrim() {
+        if (mActionBarBackgroundView != null && mStatusBarBackgroundView != null) {
+            ViewGroup.LayoutParams actionBarBackgroundViewLayoutParams = mActionBarBackgroundView.getLayoutParams();
+            actionBarBackgroundViewLayoutParams.height = getResources().getDimensionPixelSize(R.dimen.actionbar_height);
+            mActionBarBackgroundView.setLayoutParams(actionBarBackgroundViewLayoutParams);
+
+            ViewGroup.LayoutParams statusBarBackgroundViewLayoutParams = mStatusBarBackgroundView.getLayoutParams();
+            statusBarBackgroundViewLayoutParams.height = Util.getStatusBarHeight(getActivity());
+            mStatusBarBackgroundView.setLayoutParams(statusBarBackgroundViewLayoutParams);
+        }
     }
 }

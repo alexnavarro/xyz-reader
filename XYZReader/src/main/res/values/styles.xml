@@ -23,8 +23,35 @@
         <item name="colorAccent">@color/theme_accent</item>
     </style>
 
-    <style name="Theme.Bacon.Detail">
-        <item name="android:statusBarColor">@android:color/transparent</item>
+    <style name="Theme.Bacon.Base" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/theme_primary</item>
+        <item name="colorPrimaryDark">@color/theme_primary_dark</item>
+        <item name="colorAccent">@color/theme_accent</item>
+    </style>
+
+    <style name="Theme.Bacon.ActionBar.Overlayed" parent="Theme.Bacon.Base">
+        <item name="actionBarStyle">@style/Widget.MyTheme.ActionBar</item>
+        <item name="actionBarDivider">@null</item>
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="Theme.Bacon.ActionBar.Overlayed.Translucent" parent="Theme.Bacon.ActionBar.Overlayed">
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="Widget.MyTheme.ActionBar" parent="Widget.AppCompat.ActionBar">
+        <item name="android:windowBackground">@color/material_background</item>
+        <item name="android:background">@color/theme_primary</item>
+        <item name="android:height">@dimen/actionbar_height</item>
+        <item name="height">@dimen/actionbar_height</item>
+        <item name="backgroundStacked">@color/theme_primary</item>
+        <item name="android:subtitleTextStyle">@style/Bacon.ActionBar.SubtitleTextStyle</item>
+        <item name="subtitleTextStyle">@style/Bacon.ActionBar.SubtitleTextStyle</item>
+    </style>
+
+    <style name="Bacon.ActionBar.SubtitleTextStyle" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">13sp</item>
     </style>
 
 </resources>

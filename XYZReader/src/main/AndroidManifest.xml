@@ -25,6 +25,7 @@
 
         <activity
             android:name=".ui.ArticleDetailActivity"
+            android:theme="@style/Theme.Bacon.ActionBar.Overlayed.Translucent"
             android:parentActivityName=".ui.ArticleListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -36,8 +37,8 @@
                 android:value=".ui.ArticleListActivity" />
         </activity>
 
-        <!--<service android:name=".data.UpdaterService"-->
-            <!--android:exported="false" />-->
+        <service android:name=".data.UpdaterService"
+            android:exported="false" />
 
         <provider android:name=".data.ItemsProvider"
             android:authorities="com.example.xyzreader"

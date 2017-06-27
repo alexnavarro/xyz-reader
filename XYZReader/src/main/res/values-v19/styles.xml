@@ -1,0 +1,8 @@
+<resources>
+
+    <style name="Theme.Bacon.ActionBar.Overlayed.Translucent" parent="Theme.Bacon.ActionBar.Overlayed">
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+</resources>

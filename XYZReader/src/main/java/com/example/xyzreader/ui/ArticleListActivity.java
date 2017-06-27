@@ -4,6 +4,7 @@ import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Build;
@@ -64,10 +65,14 @@ public class ArticleListActivity extends AppCompatActivity implements
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-
-//        final View toolbarContainerView = findViewById(R.id.toolbar_container);
-
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if(!mIsRefreshing)
+                    startService(new Intent(getApplicationContext(), UpdaterService.class));
+            }
+        });
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         getLoaderManager().initLoader(0, null, this);
@@ -82,21 +87,21 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     private void refresh() {
-//        startService(new Intent(this, UpdaterService.class));
+        startService(new Intent(this, UpdaterService.class));
     }
-//
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//        registerReceiver(mRefreshingReceiver,
-//                new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
-//    }
-//
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
-//        unregisterReceiver(mRefreshingReceiver);
-//    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        registerReceiver(mRefreshingReceiver,
+                new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(mRefreshingReceiver);
+    }
 
     private boolean mIsRefreshing = false;
 
@@ -158,8 +163,6 @@ public class ArticleListActivity extends AppCompatActivity implements
                     ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(ArticleListActivity.this, Pair.create(view.findViewById(R.id.thumbnail), "main_photo" + vh.itemView.getTag()));
                     ActivityCompat.startActivity(ArticleListActivity.this, new Intent(Intent.ACTION_VIEW,
                             ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))), options.toBundle());
-//                    startActivity(new Intent(Intent.ACTION_VIEW,
-//                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
                 }
             });
             return vh;
