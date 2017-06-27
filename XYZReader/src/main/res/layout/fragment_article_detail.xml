@@ -118,7 +118,7 @@
                 android:id="@+id/actionbar_scrim_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="top"
+                android:layout_alignParentTop="true"
                 android:alpha="0"
                 android:orientation="vertical">
 
