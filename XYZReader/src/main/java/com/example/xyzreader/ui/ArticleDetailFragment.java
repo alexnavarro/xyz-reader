@@ -187,7 +187,6 @@ public class ArticleDetailFragment extends Fragment implements
                 ActionBar actionBar = getActivityCast().getSupportActionBar();
                 if(actionBar != null) {
                         actionBar.setTitle(titleView.getText());
-                        actionBar.setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(getActivityCast(), R.color.theme_primary)));
                 }
             }
 
@@ -221,7 +220,6 @@ public class ArticleDetailFragment extends Fragment implements
                 ActionBar actionBar = (getActivityCast()).getSupportActionBar();
                 if (actionBar != null) {
                     actionBar.setTitle("");
-                    actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#00000000")));
                 }
             }
 
