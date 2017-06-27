@@ -70,7 +70,7 @@ public class ArticleDetailFragment extends Fragment implements
     private View mStatusBarBackgroundView;
     private View mActionBarScrimLayout;
     TextView titleView;
-    private boolean isActionBarTransparent  = true;;
+    private boolean isActionBarTransparent  = true;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format

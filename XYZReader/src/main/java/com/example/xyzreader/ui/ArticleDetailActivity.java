@@ -7,15 +7,11 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.transition.ChangeBounds;
-import android.transition.Explode;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.Window;
@@ -41,12 +37,6 @@ public class ArticleDetailActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         supportRequestWindowFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            getWindow().setSharedElementEnterTransition(new ChangeBounds().setInterpolator(new FastOutSlowInInterpolator()).setDuration(750));
-//            getWindow().setReturnTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true));
-//            getWindow().setExitTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true));
-//            getWindow().setEnterTransition(new Explode().excludeTarget(android.R.id.navigationBarBackground, true).setInterpolator(new FastOutSlowInInterpolator()).setDuration(750));
-//        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_detail);
         setupActionBar();
