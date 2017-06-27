@@ -15,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.ActionBar;
+import android.support.v7.graphics.Palette;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -60,7 +61,6 @@ public class ArticleDetailFragment extends Fragment implements
     private View mRootView;
     private ObservableScrollView mScrollView;
 
-    private int mTopInset;
     private View mPhotoContainerView;
     private ImageView mPhotoView;
     private int mScrollY;
@@ -356,6 +356,14 @@ public class ArticleDetailFragment extends Fragment implements
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Bitmap bitmap = imageContainer.getBitmap();
                             if (bitmap != null) {
+                                Palette palette = Palette.from(bitmap).generate();
+                                mRootView.findViewById(R.id.meta_bar)
+                                        .setBackgroundColor(palette.getDarkMutedColor(0xFF333333));
+                                Palette.Swatch vibrant = palette.getVibrantSwatch();
+                                if (vibrant != null) {
+                                    titleView.setTextColor(vibrant.getTitleTextColor());
+                                }
+
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
                             }
                         }
